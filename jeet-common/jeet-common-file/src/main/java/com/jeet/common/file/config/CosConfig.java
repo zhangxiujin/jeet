@@ -12,11 +12,11 @@ import lombok.Setter;
 @Setter
 public class CosConfig {
 
-    public static final String secretId = "AKIDWsynMfiUzDAqFOGrBE0VjhPq0tVrwjGY";
+    public static final String secretId = "";
 
-    public static final String secretKey = "3pKZWCbkcEZeSzFLAizziALFgrlOq1vY";
+    public static final String secretKey = "";
 
-    public static final String cosRegion = "ap-shanghai";
+    public static final String cosRegion = "";
 
-    public static final String bucketName = "ywook-1306327697";
+    public static final String bucketName = "";
 }
