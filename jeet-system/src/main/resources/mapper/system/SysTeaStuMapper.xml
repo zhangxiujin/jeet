@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.system.dao.SysTeaStuMapper">
+
+    <insert id="insertList" parameterType="java.util.List">
+        insert into sys_tea_stu(tea_stu_id, teacher_id, student_id) values
+        <foreach collection="sysTeaStuList" item="it" separator=",">
+            (#{it.teaStuId}, #{it.teacherId}, #{it.studentId})
+        </foreach>
+    </insert>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from sys_tea_stu where teacher_id = #{value}
+    </delete>
+
+    <select id="selectTeachers" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select teacher_id from sys_tea_stu where student_id = #{value}
+    </select>
+
+    <select id="selectStudents" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select student_id from sys_tea_stu where teacher_id = #{teacherId}
+    </select>
+</mapper>

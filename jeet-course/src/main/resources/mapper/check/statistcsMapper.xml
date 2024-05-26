@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.check.mapper.CourseStatisticsMapper">
+
+    <select id="selectLearning" parameterType="java.lang.Long" resultType="StatisticsVo" >
+        SELECT MAX(id)  id,
+               MAX(struct_id)  struct_id,
+               MAX(content_id)  content_id,
+               user_id,
+               MAX(is_play_complete) is_play_complete,
+               MAX(study_rate)  study_rate,
+               create_time
+        FROM course_study_rate
+        where user_id = #{userId} and create_time = #{createTime}
+        GROUP BY user_id, create_time;
+    </select>
+
+</mapper>

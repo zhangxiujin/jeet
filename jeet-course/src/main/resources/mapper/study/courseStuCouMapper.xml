@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.study.mapper.CourseStuCouMapper">
+    <insert id="insert" parameterType="java.util.List">
+        insert into course_stu_cou
+            (
+               stu_co_id,
+               stu_id,
+               course_id
+            ) values
+        <foreach collection="courseStuCouList" separator="," item="it">
+            (
+                #{it.stuCoId},
+                #{it.stuId},
+                #{it.courseId}
+            )
+        </foreach>
+    </insert>
+
+    <select id="selectCourseStuCouList" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select
+            course_id courseId
+        from
+            course_stu_cou
+        where
+            stu_id = #{studentId}
+    </select>
+
+    <delete id="delStudentCourse" parameterType="java.lang.Long">
+        delete from course_stu_cou where stu_id = #{studentId}
+    </delete>
+</mapper>

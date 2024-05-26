@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.personal.mapper.TestRecordMapper">
+
+    <resultMap id="selectPracticeScoresMap" type="PracticeScoresVo">
+        <result property="structId" jdbcType="INTEGER" column="structId"></result>
+        <collection property="bankScoreList" ofType="com.jeet.course.personal.vo.PracticeScoresVo$BankScore">
+            <result property="score" jdbcType="INTEGER" column="score"></result>
+            <result property="bankType" jdbcType="VARCHAR" column="bankType"></result>
+        </collection>
+    </resultMap>
+
+    <select id="selectTest" parameterType="QueryPracticeVo" resultType="CoursePracticeRecord">
+        SELECT cp.id AS id,
+               cp.content_id AS contentId,
+               cp.user_id AS userId,
+               cp.check_status AS checkStatus,
+               cp.number AS number,
+               cp.bank_type AS bankType,
+               cp.score AS score,
+               cp.answers AS answers,
+               cp.create_time AS createTime,
+               co.name AS name
+        FROM course_practice_record cp
+                 JOIN course_content co ON cp.content_id = co.id
+        WHERE cp.bank_type = #{type} AND cp.user_id = #{userId}
+          <if test="contentId != null">
+              AND cp.content_id = #{contentId}
+          </if>
+        order by cp.create_time desc
+    </select>
+
+
+    <select id="selectChooseId" parameterType="java.util.List" resultType="ErrorChooseBankVo">
+        SELECT
+        id  bankId,
+        title  title,
+        `options`  options,
+        answer  correctAnswers,
+        `type`  type
+        FROM
+        course_choose_bank
+            where id in
+        <foreach collection="bankIdList" item="recordId" open="(" separator="," close=")">
+            #{recordId}
+        </foreach>
+    </select>
+
+    <resultMap id="selectProjectIdMap" type="ProjectErrorBankVo">
+        <result column="bankId" jdbcType="INTEGER" property="bankId"></result>
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="details" jdbcType="VARCHAR" property="details"></result>
+        <collection property="quesAttachList" ofType="com.jeet.course.personal.vo.ProjectErrorBankVo$AttachUrl">
+            <result column="url" jdbcType="VARCHAR" property="url"></result>
+            <result column="attachName" jdbcType="VARCHAR" property="name"></result>
+            <result column="extName" jdbcType="VARCHAR" property="extName"></result>
+        </collection>
+    </resultMap>
+
+    <select id="selectProjectId" parameterType="java.util.List" resultMap="selectProjectIdMap">
+        select
+            cpb.id bankId,
+            cpb.`name` name,
+            cpb.`details` details,
+            cba.url url,
+            cba.name attachName,
+            cba.ext_name extName
+        from
+            course_project_bank cpb
+        left join
+            course_bank_attachment cba
+        on
+            cpb.id = cba.bank_id
+        where
+            cpb.id in
+        <foreach collection="bankIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+
+    <select id="selectSimId" parameterType="java.util.List" resultType="SimErrorVo">
+        select
+                id bankId,
+               `name` SimpleName
+        from course_simple_bank
+        where
+                id in
+        <foreach collection="bankIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="selectTestAnswer" parameterType="java.util.List" resultType="java.lang.String">
+        select
+            answers answers
+            from course_practice_record
+            where id = #{recordId}
+    </select>
+
+    <select id="selectPracticeScores" resultMap="selectPracticeScoresMap">
+        select
+               tmp.struct_id structId,
+               tmp.score score,
+               tmp.bank_type bankType
+        from (
+              select cc.struct_id, pr.content_id, pr.score, pr.bank_type
+              from course_practice_record pr, course_content cc
+              where pr.content_id = cc.id and pr.check_status = '1' and pr.user_id = #{userId}
+              having 1
+              order by pr.create_time desc
+          ) tmp
+        group by tmp.content_id, tmp.bank_type
+    </select>
+</mapper>

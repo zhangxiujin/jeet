@@ -1,0 +1,4 @@
+com.jeet.system.api.factory.RemoteUserFallbackFactory
+com.jeet.system.api.factory.RemoteLogFallbackFactory
+com.jeet.system.api.factory.RemoteFileFallbackFactory
+com.jeet.system.api.factory.RemoteDeptFallbackFactory

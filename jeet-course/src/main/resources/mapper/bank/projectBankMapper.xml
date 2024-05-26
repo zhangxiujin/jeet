@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.bank.mapper.CourseProjectBankMapper">
+
+    <resultMap id="projectAndAttachResultMap" type="ProjectBankVo">
+        <result column="id" property="id"></result>
+        <result column="name"  property="name"></result>
+        <result column="status"  property="status"></result>
+        <result column="structId"  property="structId"></result>
+        <result column="details"  property="details"></result>
+        <result column="delFlag"  property="delFlag"></result>
+        <result column="remark"  property="remark"></result>
+        <collection property="attachList" ofType="com.jeet.course.bank.vo.ProjectBankVo$Attach">
+            <result column="fileName"  property="name"></result>
+            <result column="url"  property="url"></result>
+            <result column="extName"  property="extName"></result>
+        </collection>
+    </resultMap>
+
+    <insert id="insertProject" parameterType="CourseProjectBank">
+        insert into course_project_bank (id,name,status,struct_id,details,del_flag,create_by,create_time,
+                                        remark)
+        values (#{id},#{name},#{status},#{structId},#{details},#{delFlag},#{createBy},#{createTime},
+                #{remark})
+    </insert>
+
+    <select id="selectProject" parameterType="ProjectVo" resultType="ProjectStructVo">
+        select
+            p.id id,
+            p.name name,
+            p.status status,
+            p.struct_id structId,
+            p.details details,
+            p.del_flag delFlag,
+            p.create_by createBy,
+            p.create_time createTime,
+            p.remark remark,
+            s.struct_name structName
+        from
+            course_project_bank p
+        left join course_structure s
+        on p.struct_id = s.struct_id
+        where p.del_flag = '0'
+            <if test="name != null and name != ''">
+                and p.name like concat('%',#{name},'%')
+            </if>
+            <if test="status != null and status != ''">
+                and p.status = #{status}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != '' and params.endTime != null
+                    and params.endTime != '' ">
+                and p.create_time between #{params.beginTime} and #{params.endTime}
+            </if>
+            <if test="structIdList != null and structIdList.size() > 0">
+                and p.struct_id in
+                <foreach collection="structIdList" item="it" open="(" separator="," close=")">
+                    #{it}
+                </foreach>
+            </if>
+        order by p.create_time desc
+
+    </select>
+
+    <select id="selectCount" parameterType="CourseProjectBank" resultType="Integer">
+        select count(1) from course_project_bank where del_flag = #{delFlag} and name = #{name}
+    </select>
+
+    <delete id="deleteProject" parameterType="java.lang.Long">
+        update course_project_bank set del_flag = '1' where id = #{value}
+    </delete>
+
+    <delete id="deleteProjectList" parameterType="java.util.List">
+        update
+        course_project_bank
+        set
+        del_flag = '1'
+        where id in
+        <foreach collection="list" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </delete>
+
+    <select id="selectProjectId" parameterType="java.lang.Long" resultType="ProjectBankVo">
+        select
+            p.id id,
+            p.name name,
+            p.status status,
+            p.struct_id structId,
+            p.details details,
+            p.del_flag delFlag,
+            p.remark remark,
+            s.struct_name structName
+        from
+            course_project_bank p
+        left join
+            course_structure s
+        on
+            p.struct_id = s.struct_id
+        where
+            p.del_flag = '0' and p.id = #{id}
+    </select>
+
+    <select id="selectProjectAndAttach" parameterType="java.lang.Long" resultMap="projectAndAttachResultMap">
+        select
+            p.id id,
+            p.name name,
+            p.status status,
+            p.struct_id structId,
+            p.details details,
+            p.del_flag delFlag,
+            p.remark remark,
+            a.name fileName,
+            a.url url,
+            a.ext_name extName
+        from
+            course_project_bank p
+        left join
+            course_bank_attachment a
+        on
+            p.id = a.bank_id
+        where
+            p.del_flag = '0' and (a.del_flag = '0' or a.del_flag is null) and p.id = #{value}
+    </select>
+
+    <update id="updateProject" parameterType="CourseProjectBank">
+        update
+        course_project_bank
+        set
+        <trim suffixOverrides=",">
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            <if test="structId != null and structId != ''">
+                struct_id = #{structId},
+            </if>
+            <if test="details != null and details != ''">
+                details = #{details},
+            </if>
+            <if test="delFlag != null and delFlag != ''">
+                del_flag = #{delFlag},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark}
+            </if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <select id="selectProjectByContentId" parameterType="ProjectVo" resultType="ProjectStructVo">
+        select
+            p.id id,
+            p.name name,
+            p.details details,
+            p.struct_id structId,
+            p.remark remark,
+            p.create_time createTime,
+            s.struct_name structName
+        from
+            course_project_bank p
+                left join
+            course_structure s
+            on p.struct_id = s.struct_id
+        where p.id not in
+              (select bank_id from course_content_bank where content_id = #{contentId} and type = '2')
+          and p.del_flag = '0' and p.status = '0'
+        <if test="name != null and name != ''">
+            and p.name like concat('%',#{name},'%')
+        </if>
+        <if test="params.beginTime != null and params.beginTime != '' and params.endTime != null
+                    and params.endTime != '' ">
+            and p.create_time between #{params.beginTime} and #{params.endTime}
+        </if>
+        <if test="structIdList != null and structIdList.size() > 0">
+            and p.struct_id in
+            <foreach collection="structIdList" item="it" open="(" separator="," close=")">
+                #{it}
+            </foreach>
+        </if>
+        order by p.create_time desc
+    </select>
+
+    <resultMap id="selectProjectListMap" type="ProjectBankVo">
+        <result property="id" jdbcType="INTEGER" column="id"></result>
+        <result property="name" jdbcType="VARCHAR" column="name"></result>
+        <result property="details" jdbcType="VARCHAR" column="details"></result>
+        <result property="remark" jdbcType="VARCHAR" column="remark"></result>
+        <collection property="attachList" ofType="com.jeet.course.bank.vo.ProjectBankVo$Attach">
+            <result property="name" jdbcType="VARCHAR" column="attachName"></result>
+            <result property="extName" jdbcType="VARCHAR" column="extName"></result>
+            <result property="url" jdbcType="VARCHAR" column="url"></result>
+        </collection>
+    </resultMap>
+
+    <select id="selectProjectList" parameterType="java.util.List" resultMap="selectProjectListMap">
+        select
+            cpb.id id,
+            cpb.name name,
+            cpb.details details,
+            cpb.remark remark,
+            cba.name attachName,
+            cba.ext_name extName,
+            cba.url url
+        from course_project_bank cpb
+        left join course_bank_attachment cba
+        on cpb.id = cba.bank_id
+        where cpb.id in
+            <foreach collection="list" item="it" open="(" separator="," close=")">
+                #{it}
+            </foreach>
+    </select>
+
+</mapper>

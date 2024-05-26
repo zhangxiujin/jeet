@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.study.mapper.CoursePracticeRecordMapper">
+    <select id="selectList" parameterType="java.lang.Long" resultType="ContentVo">
+        select
+            c.id,
+            c.`name`,
+            c.`desc`,
+            b.type,
+            c.create_time,
+            v.url
+        from
+            course_content c
+        left join
+            course_content_bank b
+        on
+            c.id = b.content_id
+        left join
+            course_content_video v
+        on
+            c.id = v.content_id
+        where
+            c.struct_id = #{value}
+    </select>
+
+    <insert id="insert" parameterType="CoursePracticeRecord">
+        insert into course_practice_record(id, content_id, course_id, user_id, number, bank_type, score,
+                                           answers, create_time,check_status)
+        values (#{id}, #{contentId}, #{courseId}, #{userId}, #{number}, #{bankType}, #{score},
+                #{answers}, #{createTime},#{checkStatus})
+    </insert>
+
+    <select id="selectWordNumber" parameterType="QueryPracticeVo" resultType="java.lang.Integer">
+        select count(1) from course_practice_record
+        where bank_type = #{type} and content_id = #{contentId} and user_id = #{userId}
+    </select>
+
+    <resultMap id="selectStudyProjectMap" type="ProjectStructVo">
+        <result column="name" jdbcType="VARCHAR" property="name"></result>
+        <result column="status" jdbcType="VARCHAR" property="status"></result>
+        <result column="structId" jdbcType="INTEGER" property="structId"></result>
+        <result column="details" jdbcType="VARCHAR" property="details"></result>
+        <result column="delFlag" jdbcType="VARCHAR" property="delFlag"></result>
+        <result column="remark" jdbcType="VARCHAR" property="remark"></result>
+        <result column="structName" jdbcType="VARCHAR" property="structName"></result>
+        <result column="contentId" jdbcType="INTEGER" property="contentId"></result>
+        <result column="id" jdbcType="INTEGER" property="id"></result>
+        <collection property="attachList" ofType="CourseBankAttachment">
+            <result column="attachId" jdbcType="INTEGER" property="id"></result>
+            <result column="attName" jdbcType="VARCHAR" property="name"></result>
+            <result column="extName" jdbcType="VARCHAR" property="extName"></result>
+            <result column="url" jdbcType="VARCHAR" property="url"></result>
+        </collection>
+    </resultMap>
+
+    <select id="selectStudyProject" parameterType="ProjectVo" resultMap="selectStudyProjectMap">
+        select
+        p.name name,
+        p.status status,
+        p.struct_id structId,
+        p.details details,
+        p.del_flag delFlag,
+--         p.create_by createBy,
+--         p.create_time createTime,
+        p.remark remark,
+        b.name structName,
+        d.content_id contentId,
+        d.bank_id id,
+        att.id attachId,
+        att.name attName,
+        att.ext_name extName,
+        att.url url
+        from course_content b
+        left join course_content_bank d
+        on b.id = d.content_id
+        left join course_project_bank p
+        on d.bank_id = p.id
+        left join course_bank_attachment att
+        on p.id = att.bank_id
+        where p.del_flag = '0' and p.status = '0'
+        and  b.id = #{contentId}
+<!--        <if test="name != null and name != ''">-->
+<!--            and p.name like concat('%',#{name},'%')-->
+<!--        </if>-->
+<!--        <if test="params.beginTime != null and params.beginTime != '' and params.endTime != null-->
+<!--                    and params.endTime != '' ">-->
+<!--            and p.create_time between #{params.beginTime} and #{params.endTime}-->
+<!--        </if>-->
+<!--        <if test="structIdList != null and structIdList.size() > 0">-->
+<!--            and p.struct_id in-->
+<!--            <foreach collection="structIdList" item="it" open="(" separator="," close=")">-->
+<!--                #{it}-->
+<!--            </foreach>-->
+<!--        </if>-->
+        order by d.create_time asc
+    </select>
+
+    <insert id="insertProject" parameterType="CourseStudyProjectVo">
+        insert into
+            course_practice_record(
+            id,
+            content_id,
+            course_id,
+            user_id,
+            number,
+            bank_type,
+            score,
+            answers,
+            check_status,
+            create_time)
+        values (
+           #{id},
+           #{contentId},
+           #{courseId},
+           #{userId},
+           #{number},
+           #{bankType},
+           #{score},
+           #{answers},
+           #{checkStatus},
+           #{createTime})
+    </insert>
+
+    <select id="selectChooseList" parameterType="java.lang.Long" resultType="ChooseStructureVo">
+        select
+            b.id contentId,
+            c.id id,
+            c.title title,
+            c.options options,
+            c.answer answer,
+            c.type type,
+            c.create_time createTime,
+            s.struct_name structName
+        from
+            course_choose_bank c
+                join  course_content_bank b on b.bank_id = c.id
+                join course_structure s on s.struct_id = c.struct_id
+        where b.content_id = #{value}
+    </select>
+
+    <insert id="insertQuestion" parameterType="CourseStudyQuestion">
+        insert into course_study_question(
+              id,
+              content_id,
+              course_id,
+              status,
+              question_content,
+              audio_path,
+              user_id,
+              create_time
+          )
+        values (#{id},
+                #{contentId},
+                #{courseId},
+                #{status},
+                #{questionContent},
+                #{audioPath},
+                #{userId},
+                #{createTime})
+    </insert>
+
+    <resultMap id="questionAnswersMap" type="QuestionReplyVo">
+        <result column="questionId" property="questionId"></result>
+        <result column="contentId" property="contentId"></result>
+        <result column="status" property="status"></result>
+        <result column="questionContent" property="questionContent"></result>
+        <result column="questionCreateTime" property="questionCreateTime"></result>
+        <result column="nickName" property="nickName"></result>
+        <result column="deptName" property="deptName"></result>
+        <result column="replyName" property="replyName"></result>
+        <result column="audioPath" property="audioPath"></result>
+        <collection property="courseStudyReplyList" ofType="CourseStudyReply">
+            <result property="replyId" column="replyId" />
+            <result property="replyContent" column="replyContent"/>
+            <result property="createTime" column="replyCreateTime"/>
+            <result column="replyAudioPath" property="audioPath"></result>
+        </collection>
+    </resultMap>
+
+    <select id="selectQuestionAnswers" parameterType="CourseStudyQuestion" resultMap="questionAnswersMap">
+        select
+               q.id questionId,
+               q.content_id contentId,
+               q.status status,
+               q.audio_path audioPath,
+               q.question_content questionContent,
+               q.create_time questionCreateTime,
+               r.reply_content replyContent,
+               r.create_time replyCreateTime,
+               r.audio_path replyAudioPath,
+               s.nick_name nickName,
+               d.dept_name deptName
+        from
+             course_study_question q
+        left join
+             course_study_reply r
+        on
+            q.id = r.question_id
+        left join
+             sys_user s
+        on
+             q.user_id = s.user_id
+        left join
+             sys_dept d
+        on
+             s.dept_id = d.dept_id
+        where
+            content_id = #{contentId}
+        and
+            q.user_id = #{userId}
+        order by
+        q.create_time desc
+    </select>
+
+    <resultMap id="otherQuestionAnswersMap" type="QuestionReplyVo">
+        <result column="questionId" property="questionId"></result>
+        <result column="contentId" property="contentId"></result>
+        <result column="status" property="status"></result>
+        <result column="questionContent" property="questionContent"></result>
+        <result column="questionCreateTime" property="questionCreateTime"></result>
+        <result column="nickName" property="nickName"></result>
+        <result column="deptName" property="deptName"></result>
+        <result column="replyName" property="replyName"></result>
+        <result column="audioPath" property="audioPath"></result>
+        <collection property="courseStudyReplyList" ofType="CourseStudyReply">
+            <result property="replyId" column="replyId" />
+            <result property="replyContent" column="replyContent"/>
+            <result property="createTime" column="replyCreateTime"/>
+            <result column="replyAudioPath" property="audioPath"></result>
+        </collection>
+    </resultMap>
+
+    <select id="selectOtherQuestionAnswers" parameterType="CourseStudyQuestion" resultMap="otherQuestionAnswersMap">
+        select
+            q.id questionId,
+            q.content_id contentId,
+            q.status status,
+            q.question_content questionContent,
+            q.create_time questionCreateTime,
+            q.audio_path audioPath,
+            r.reply_content replyContent,
+            r.create_time replyCreateTime,
+            r.audio_path replyAudioPath,
+            s.nick_name nickName,
+            d.dept_name deptName
+        from
+            course_study_question q
+                left join
+            course_study_reply r
+            on
+                q.id = r.question_id
+                left join
+            sys_user s
+            on
+                q.user_id = s.user_id
+                left join
+            sys_dept d
+            on
+                s.dept_id = d.dept_id
+        where
+            content_id = #{contentId}
+          and
+            q.user_id not in (#{userId})
+        order by
+            q.create_time desc
+    </select>
+
+    <select id="selectStructByQuesId" resultType="java.lang.Long">
+        select
+            cc.struct_id
+        from
+            course_structure cs,
+            course_content cc,
+            course_study_question csq
+        where
+            cs.struct_id = cc.struct_id
+        and
+            cc.id = csq.content_id
+        and
+            csq.id = #{questionId}
+    </select>
+
+    <select id="selectRootStructId" resultType="java.lang.Long">
+        SELECT
+            T2.struct_id
+        FROM
+            (
+                SELECT
+                    @r AS _struct_id,
+		( SELECT @r := parent_id FROM `course_structure` WHERE struct_id = _struct_id ) AS 2v2,
+		@l := @l + 1 AS lvl
+                FROM
+                    ( SELECT @r := #{value}, @l := 0 ) vars,
+                    course_structure h
+
+            ) T1
+                LEFT JOIN course_structure T2 ON T1._struct_id = T2.struct_id
+        WHERE
+            T2.parent_id = 0 and T2.struct_id is not null
+    </select>
+</mapper>

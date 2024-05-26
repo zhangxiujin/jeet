@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.content.mapper.CourseContentMapper">
+
+    <resultMap id="wordListMap" type="CourseWordBank">
+        <result column="id" jdbcType="INTEGER" property="id"></result>
+        <result column="zh_name" jdbcType="VARCHAR" property="zhName"></result>
+        <result column="en_name" jdbcType="VARCHAR" property="enName"></result>
+        <result column="remark" jdbcType="VARCHAR" property="remark"></result>
+    </resultMap>
+
+    <insert id="insert" parameterType="CourseContent">
+        insert into course_content(id,struct_id,`name`, `desc`, create_by, create_time)
+        values(#{id},#{structId}, #{name}, #{desc}, #{createBy}, #{createTime})
+    </insert>
+
+    <select id="select" parameterType="java.lang.Long" resultType="CourseContent">
+        select id id, struct_id structId, `name` `name`, `desc` `desc`
+        from course_content
+        where struct_id = #{value}
+    </select>
+
+    <update id="update" parameterType="CourseContent">
+        update
+            course_content
+        set
+            `desc` = #{desc}
+        where struct_id = #{structId}
+    </update>
+
+    <select id="selectContentAndVideo" parameterType="java.lang.Long" resultType="ContentVo">
+        select
+           co.id contentId,
+           co.name name,
+           co.desc `desc`,
+           cv.url url,
+           cv.name videoName,
+           cv.ext ext
+        from
+            course_content co
+        left join course_content_video cv
+        on co.id = cv.content_id
+        where
+            co.struct_id = #{value}
+    </select>
+
+    <select id="selectWordListByContentId" parameterType="java.lang.Long" resultMap="wordListMap">
+        select
+           cw.id,
+           cw.zh_name,
+           cw.en_name,
+           cw.remark
+        from
+             course_word_bank cw, course_content_bank co
+        where
+              cw.id = co.bank_id
+          and
+              cw.status = '0'
+          and
+              co.content_id = #{value}
+    </select>
+</mapper>

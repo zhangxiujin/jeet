@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.content.mapper.CourseContentBankMapper">
+
+    <insert id="insertList" parameterType="CourseContentBank">
+        insert into course_content_bank(id, content_id, bank_id, type, create_time)
+        values
+            <foreach collection="list" item="it"  separator="," >
+                (#{it.id}, #{it.contentId}, #{it.bankId}, #{it.type}, #{it.createTime})
+            </foreach>
+    </insert>
+
+    <select id="selectWord" parameterType="java.lang.Long" resultType="ContentWordVo">
+        select
+            b.id contentId,
+            w.id id,
+            w.zh_name zhName,
+            w.en_name enName,
+            w.struct_id structId,
+            w.create_time createTime,
+            s.struct_name structName
+        from
+            course_word_bank w
+                left join  course_content_bank b on b.bank_id = w.id
+                left join course_structure s on s.struct_id = w.struct_id
+        where b.content_id = #{value}
+    </select>
+
+    <select id="selectChoose" parameterType="java.lang.Long" resultType="ContentChooseVo">
+        select
+            b.id contentId,
+            c.id id,
+            c.title title,
+            c.options options,
+            c.answer answer,
+            c.type type,
+            c.create_time createTime,
+            s.struct_name structName
+        from
+            course_choose_bank c
+                left join  course_content_bank b on b.bank_id = c.id
+                left join course_structure s on s.struct_id = c.struct_id
+        where b.content_id = #{value}
+    </select>
+
+    <select id="selectProject" parameterType="java.lang.Long" resultType="ContentProjectVo">
+        select
+            b.id contentId,
+            p.id id,
+            p.name name,
+            p.details details,
+            p.remark remark,
+            p.create_time createTime,
+            s.struct_name structName
+        from
+            course_project_bank p
+                left join  course_content_bank b on b.bank_id = p.id
+                left join course_structure s on s.struct_id = p.struct_id
+        where b.content_id = #{value}
+    </select>
+
+    <select id="selectSimple" parameterType="java.lang.Long" resultType="ContentSimpleVo">
+        select
+            b.id contentId,
+            s.id id,
+            s.name name,
+            s.details details,
+            s.remark remark,
+            s.create_time createTime,
+            c.struct_name structName
+        from
+            course_simple_bank s
+        left join  course_content_bank b on b.bank_id = s.id
+        left join course_structure c on c.struct_id = s.struct_id
+        where b.content_id = #{value}
+    </select>
+
+    <delete id="deleteWord" parameterType="DeleteWordVo">
+        delete from course_content_bank
+        where type = '0' and content_id = #{wordContentId} and bank_id in
+        <foreach collection="wordIdList" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </delete>
+
+    <delete id="deleteChoose" parameterType="DeleteChooseVo">
+        delete from course_content_bank
+        where type = '1' and content_id = #{chooseContentId} and bank_id in
+        <foreach collection="chooseIdList" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </delete>
+
+    <delete id="deleteProject" parameterType="DeleteProjectVo">
+        delete from course_content_bank
+        where type = '2' and content_id = #{projectContentId} and bank_id in
+        <foreach collection="projectIdList" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSimple" parameterType="DeleteSimpleVo">
+        delete from course_content_bank
+        where type = '3' and content_id = #{simpleContentId} and bank_id in
+        <foreach collection="simpleIdList" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </delete>
+
+</mapper>

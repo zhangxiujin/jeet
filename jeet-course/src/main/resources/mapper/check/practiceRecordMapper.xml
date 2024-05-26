@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.check.mapper.CoursePracticeRecordMappers">
+    <select id="selectPracticeUser" parameterType="PracticeVo" resultType="PracticeUserVo">
+        select distinct
+               u.user_id userId,
+               u.user_name userName,
+               u.nick_name nickName,
+               d.dept_name deptName,
+               p.content_id contentId,
+               max(p.create_time) createTime
+        from
+             sys_user u
+        inner join
+                 course_practice_record p
+        on p.user_id = u.user_id
+        inner join
+                 sys_dept d
+        on d.dept_id = u.dept_id
+        where p.content_id = #{contentId}
+        <if test="userName != null and userName != ''">
+            and u.user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="nickName != null and nickName != ''">
+            and u.nick_name like concat('%',#{nickName},'%')
+        </if>
+        <if test="deptName != null and deptName != ''">
+            and d.dept_name like concat('%',#{deptName},'%')
+        </if>
+        <if test="params.beginTime != null and params.beginTime != '' and params.endTime != null
+                    and params.endTime != '' ">
+            and w.create_time between #{params.beginTime} and #{params.endTime}
+        </if>
+        group by u.user_id,d.dept_name
+    </select>
+
+    <select id="selectPractice" parameterType="PracticeVo"
+            resultType="PracticeRecordVo">
+        select
+               p.id id,
+               u.nick_name nickName,
+               p.number number,
+               p.score score,
+               p.check_status checkStatus,
+               p.create_time createTime
+        from
+             course_practice_record p
+        inner join sys_user u
+        on u.user_id = p.user_id
+        where p.content_id = #{contentId} and p.bank_type = #{type} and p.user_id = #{userId}
+    </select>
+
+    <select id="selectPracticeRecords" resultType="PracticeRecordVo">
+        select
+            pr.id id,
+            pr.content_id contentId,
+            pr.check_status checkStatus,
+            pr.user_id userId,
+            pr.create_time createTime,
+            pr.score score,
+            pr.check_status checkStatus,
+            pr.bank_type bankType,
+            pr.number number,
+            cs.struct_name courseName,
+            us.nick_name nickName,
+            de.dept_name deptName,
+            co.name name
+        from
+            course_practice_record pr
+        LEFT JOIN
+            sys_user us
+        on
+            pr.user_id = us.user_id
+        LEFT JOIN
+            sys_dept de
+        on
+            us.dept_id = de.dept_id
+        LEFT JOIN
+            course_content co
+        on
+            pr.content_Id = co.id
+        LEFT JOIN
+            course_structure cs
+        on
+            pr.course_id = cs.struct_id
+        where
+            pr.check_status = #{checkStatus}
+        <if test="bankType != null and bankType != ''">
+          and bank_type = #{bankType}
+        </if>
+        <choose>
+            <when test="courseIds != null and courseIds.size() > 0">
+                and pr.course_id in
+                <foreach collection="courseIds" item="it" open="(" separator="," close=")">
+                    #{it}
+                </foreach>
+            </when>
+            <otherwise>
+                <if test="structId != null">
+                    and co.struct_id = #{structId}
+                </if>
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="userId != null">
+                and pr.user_id = #{userId}
+            </when>
+            <otherwise>
+                <if test="studentIds != null and studentIds.size() > 0">
+                    and pr.user_id in
+                    <foreach collection="studentIds" item="it" open="(" separator="," close=")">
+                        #{it}
+                    </foreach>
+                </if>
+            </otherwise>
+        </choose>
+        <if test="sort == 'asc'">
+            ORDER BY pr.create_time asc
+        </if>
+        <if test="sort == 'desc'">
+            ORDER BY pr.create_time desc
+        </if>
+    </select>
+
+    <select id="selectById" parameterType="java.lang.Long" resultType="CoursePracticeRecord">
+        select answers,score,comment from course_practice_record where id = #{id}
+    </select>
+
+    <update id="updatePractice" parameterType="CoursePracticeRecord">
+        update
+            course_practice_record
+        set
+            <if test="comment != null and comment != '' ">
+                comment = #{comment},
+            </if>
+            <if test="answers != null">
+                answers = #{answers},
+            </if>
+            score = #{score},
+            check_status = #{checkStatus}
+        where
+            id = #{id}
+    </update>
+
+</mapper>

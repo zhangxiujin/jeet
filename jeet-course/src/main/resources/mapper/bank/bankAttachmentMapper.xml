@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.bank.mapper.CourseBankAttachmentMapper">
+
+    <insert id="insertCourseBankAttachment" parameterType="CourseBankAttachment">
+        insert into course_bank_attachment(id, name, bank_id,
+           ext_name, url, del_flag ,create_by, create_time, update_by, update_time)
+        values(
+                #{id}, #{name}, #{bankId}, #{extName}, #{url}, #{delFlag} , #{createBy},
+               #{createTime}, #{updateBy}, #{updateTime}
+         )
+    </insert>
+
+    <select id="selectAttachments" parameterType="java.lang.Long" resultType="CourseBankAttachment">
+        select id id, name name, bank_id bankId, ext_name extName, url url, del_flag delFlag
+        from course_bank_attachment
+        where del_flag = '0' and bank_id = #{value}
+    </select>
+
+    <delete id="deleteAttachments" parameterType="java.util.List">
+        update course_bank_attachment set del_flag = '1'
+        where id in
+        <foreach collection="list" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </delete>
+
+    <delete id="deleteAttachmentsByUrls" parameterType="java.lang.String">
+        delete from
+            course_bank_attachment
+        where url in
+        <foreach collection="urls" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </delete>
+
+</mapper>

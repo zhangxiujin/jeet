@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.jeet</groupId>
+        <artifactId>jeet-cloud</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>jeet-common</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>jeet-common-core</module>
+        <module>jeet-common-datasource</module>
+        <module>jeet-common-security</module>
+        <module>jeet-common-redis</module>
+        <module>jeet-common-datascope</module>
+        <module>jeet-common-log</module>
+        <module>jeet-common-file</module>
+        <module>jeet-common-message</module>
+    </modules>
+</project>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.personal.mapper.PersonalStudyRateMapper">
+
+    <insert id="insertStudyRate" parameterType="CourseStudyRate">
+        insert into coursel_study_rate(id, content_id, user_id, is_play_complete, study_rate,
+                                        create_time)
+        values (#{id}, #{contentId}, #{userId}, #{isPlayComplete}, #{studyRate}, #{createTime})
+    </insert>
+
+    <insert id="insertList" parameterType="CourseStudyRate">
+        insert into course_study_rate(id, struct_id, content_id, user_id, is_play_complete, study_rate,
+                                       create_time)
+        values
+        <foreach collection="list" item="it" separator=",">
+            (#{it.id},#{it.structId},#{it.contentId},#{it.userId},#{it.isPlayComplete},#{it.studyRate},#{it.createTime})
+        </foreach>
+    </insert>
+
+    <select id="selectStudyRate" parameterType="CourseStudyRate" resultType="CourseStudyRate">
+        select
+               id id,
+               content_id contentId,
+               user_id userId,
+               is_play_complete isPlayComplete,
+               study_rate studyRate,
+               create_time createTime
+        from
+            course_study_rate
+        where 1 = 1
+              <if test="contentId != null">
+                  and content_id = #{contentId}
+              </if>
+              <if test="userId != null">
+                  and user_id = #{userId}
+              </if>
+    </select>
+
+    <update id="updateStudyRate" parameterType="CourseStudyRate">
+        update
+            coursel_study_rate
+        set
+            study_rate = #{studyRate},
+            <if test="isPlayComplete != null and isPlayComplete != ''">
+                is_play_complete = #{isPlayComplete}
+            </if>
+        where content_id = #{contentId} and user_id = #{userId}
+    </update>
+
+    <select id="selectList" parameterType="java.lang.Long" resultType="StructureRateVo">
+        select
+            s.struct_id structId,
+            s.struct_name structName,
+            s.type type,
+            s.parent_id parentId,
+            t.id rateId,
+            t.content_id contentId,
+            t.is_play_complete isPlayComplete,
+            t.study_rate studyRate,
+            t.create_time createTime
+        from course_structure s
+        left join
+            (select id, content_id, is_play_complete,
+                    study_rate, create_time, struct_id
+            from course_study_rate
+            where user_id = #{value}) t
+        on s.struct_id = t.struct_id
+        where s.del_flag = "0"
+    </select>
+
+    <update id="updateList" parameterType="CourseStudyRate">
+        <foreach collection="list" item="it" separator=";">
+            update
+                course_study_rate
+            set
+                is_play_complete = #{it.isPlayComplete},
+                study_rate = #{it.studyRate}
+            where
+                content_id = #{it.contentId}
+                and user_id = #{it.userId}
+        </foreach>
+    </update>
+
+    <select id="selectTaskList" resultType="CourseStudyRate">
+        select
+            id id,
+            content_id contentId,
+            user_id userId,
+            is_play_complete isPlayComplete,
+            study_rate studyRate,
+            create_time createTime
+        from
+            course_study_rate
+    </select>
+
+</mapper>

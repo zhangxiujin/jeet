@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.bank.mapper.CourseChooseBankMapper">
+
+    <insert id="insertCourseChooseBank" parameterType="CourseChooseBank">
+        insert into course_choose_bank(id, title, options, answer, type, struct_id ,del_flag, status,
+                                       create_by,create_time, remark)
+                    values(#{id}, #{title}, #{options}, #{answer}, #{type}, #{structId} ,#{delFlag},
+                           #{status},#{createBy}, #{createTime}, #{remark})
+    </insert>
+
+    <select id="selectCourseChooseBank" parameterType="ChooseVo" resultType="ChooseStructureVo">
+        select
+        c.id id,
+        c.title title,
+        c.options options,
+        c.answer answer,
+        c.type type,
+        c.del_flag delFlag,
+        c.status status,
+        c.struct_id structId,
+        c.create_by createBy,
+        c.create_time createTime,
+        c.remark remark,
+        s.struct_name structName
+        from
+        course_choose_bank c
+        left join course_structure s
+        on c.struct_id = s.struct_id
+        where c.del_flag = '0'
+        <if test="title != null and title != ''">
+            and c.title like concat('%',#{title},'%')
+        </if>
+        <if test="status != null and status != ''">
+            and c.status = #{status}
+        </if>
+        <if test="params.beginTime != null and params.beginTime != '' and params.endTime != null
+                    and params.endTime != '' ">
+            and c.create_time between #{params.beginTime} and #{params.endTime}
+        </if>
+        <if test="structIdList != null and structIdList.size() > 0">
+            and c.struct_id in
+            <foreach collection="structIdList" item="it" open="(" separator="," close=")">
+                #{it}
+            </foreach>
+        </if>
+        order by c.create_time desc
+    </select>
+
+    <select id="selectChoose" parameterType="java.lang.Long" resultType="ChooseStructureVo">
+        select
+            c.id id,
+            c.title title,
+            c.options options,
+            c.answer answer,
+            c.type type,
+            c.del_flag delFlag,
+            c.status status,
+            c.struct_id structId,
+            c.create_by createBy,
+            c.create_time createTime,
+            c.remark remark,
+            s.struct_name structName
+        from
+            course_choose_bank c
+        left join course_structure s
+        on c.struct_id = s.struct_id
+        where c.del_flag = '0' and c.id = #{id}
+    </select>
+
+    <delete id="deleteChoose" parameterType="java.lang.Long">
+        update course_choose_bank set del_flag = '1' where id = #{value}
+    </delete>
+
+    <delete id="deleteChooseList" parameterType="java.util.List">
+        update
+            course_choose_bank
+        set
+            del_flag = '1'
+        where id in
+        <foreach collection="list" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </delete>
+
+    <update id="updateChoose" parameterType="CourseChooseBank">
+        update
+            course_choose_bank
+        set
+            <trim suffixOverrides=",">
+                <if test="title != null and title != ''">title = #{title},</if>
+                <if test="type != null and type != ''">type = #{type},</if>
+                <if test="status != null and status != ''">status = #{status},</if>
+                <if test="options != null and options != ''">options = #{options},</if>
+                <if test="answer != null and answer != ''">answer = #{answer},</if>
+                <if test="remark != null and remark != ''">remark = #{remark},</if>
+                <if test="structId != null">struct_id = #{structId}</if>
+            </trim>
+        where id = #{id}
+    </update>
+
+    <select id="selectChooseByContentId" parameterType="ChooseVo" resultType="ChooseStructureVo">
+        select
+            c.id id,
+            c.title title,
+            c.options options,
+            c.answer answer,
+            c.type type,
+            c.struct_id structId,
+            c.create_time createTime,
+            s.struct_name structName
+        from
+            course_choose_bank c
+                left join
+            course_structure s
+            on c.struct_id = s.struct_id
+        where c.id not in
+              (select bank_id from course_content_bank where content_id = #{contentId} and type = '1')
+            and c.del_flag = '0' and c.status = '0'
+        <if test="title != null and title != ''">
+            and c.title like concat('%',#{title},'%')
+        </if>
+        <if test="params.beginTime != null and params.beginTime != '' and params.endTime != null
+                    and params.endTime != '' ">
+            and c.create_time between #{params.beginTime} and #{params.endTime}
+        </if>
+        <if test="structIdList != null and structIdList.size() > 0">
+            and c.struct_id in
+            <foreach collection="structIdList" item="it" open="(" separator="," close=")">
+                #{it}
+            </foreach>
+        </if>
+        order by c.create_time desc
+    </select>
+
+    <select id="selectChooseList" parameterType="java.util.List" resultType="ChooseStructureVo">
+        select
+               id id,
+               title title,
+               options options,
+               answer answer,
+               remark remark,
+               type type
+        from course_choose_bank
+        where id in
+            <foreach collection="list" item="it" open="(" separator="," close=")">
+                #{it.bankId}
+            </foreach>
+    </select>
+
+</mapper>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.bank.mapper.CourseWordBankMapper">
+
+    <sql id="baseSql" >
+        id id,
+        zh_name zhName,
+        en_name enName,
+        sort sort,
+        del_flag delFlag,
+        status status,
+        struct_id structId,
+        create_by createBy,
+        create_time createTime,
+        remark remark
+    </sql>
+
+   <insert id="insertWordBank" parameterType="CourseWordBank">
+       insert into course_word_bank(
+           id,
+           zh_name,
+           en_name,
+           sort,
+           del_flag,
+           status,
+           struct_id,
+           create_by,
+           create_time,
+           remark)
+        values (#{id},
+                #{zhName},
+                #{enName},
+                #{sort},
+                #{delFlag},
+                #{status},
+                #{structId},
+                #{createBy},
+                #{createTime},
+                #{remark})
+   </insert>
+
+    <select id="selectWordList" parameterType="QueryListVo" resultType="BankStructureVo">
+        select
+            w.id id,
+            w.zh_name zhName,
+            w.en_name enName,
+            w.sort sort,
+            w.del_flag delFlag,
+            w.status status,
+            w.struct_id structId,
+            w.create_by createBy,
+            w.create_time createTime,
+            w.remark remark,
+            s.struct_name structName
+        from
+            course_word_bank w
+        left join course_structure s
+        on w.struct_id = s.struct_id
+        where w.del_flag = '0'
+            <if test="zhName != null and zhName != ''">
+                and w.zh_name like concat('%',#{zhName},'%')
+            </if>
+            <if test="enName != null and enName != ''">
+                and w.en_name like concat('%',#{enName},'%')
+            </if>
+            <if test="status != null and status != ''">
+                and w.status = #{status}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != '' and params.endTime != null
+                    and params.endTime != '' ">
+                and w.create_time between #{params.beginTime} and #{params.endTime}
+            </if>
+            <if test="structIdList != null and structIdList.size() > 0">
+                and w.struct_id in
+                <foreach collection="structIdList" item="it" open="(" separator="," close=")">
+                    #{it}
+                </foreach>
+            </if>
+        order by w.create_time desc
+    </select>
+
+    <select id="selectWord" parameterType="java.lang.Long" resultType="CourseWordBank">
+        select
+            <include refid="baseSql" />
+        from
+            course_word_bank
+        where del_flag = '0' and id = #{id}
+    </select>
+
+    <update id="updateWord" parameterType="CourseWordBank">
+        update
+            course_word_bank
+        set
+            <trim suffixOverrides=",">
+                <if test="zhName != null and zhName != ''">zh_name = #{zhName},</if>
+                <if test="enName != null and enName != ''">en_name = #{enName},</if>
+                <if test="sort != null ">sort = #{sort},</if>
+                <if test="remark != null and remark != ''">remark = #{remark},</if>
+                <if test="status != null and status != ''">status = #{status},</if>
+                <if test="structId != null">struct_id = #{structId},</if>
+            </trim>
+        where del_flag = '0' and id = #{id}
+    </update>
+
+    <delete id="deleteWord" parameterType="java.lang.Long">
+        update
+            course_word_bank
+        set
+            del_flag = '1'
+        where id = #{value}
+    </delete>
+
+    <delete id="deleteWords" parameterType="java.util.List">
+        update
+            course_word_bank
+        set
+            del_flag = '1'
+        where id in
+        <foreach collection="list" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </delete>
+
+    <select id="selectCount" parameterType="CourseWordBank" resultType="Integer">
+        select count(1) from course_word_bank where del_flag = #{delFlag} and en_name = #{enName}
+    </select>
+
+    <select id="selectWordByContentId" parameterType="QueryListVo" resultType="BankStructureVo">
+        select
+               w.id id,
+               w.zh_name zhName,
+               w.en_name enName,
+               w.struct_id structId,
+               w.create_time createTime,
+               s.struct_name structName
+        from
+             course_word_bank w
+        left join
+                 course_structure s
+        on w.struct_id = s.struct_id
+        where w.id not in
+            (select bank_id from course_content_bank where content_id = #{contentId} and type = '0')
+            and w.del_flag = '0' and w.status = '0'
+        <if test="zhName != null and zhName != ''">
+            and w.zh_name like concat('%',#{zhName},'%')
+        </if>
+        <if test="enName != null and enName != ''">
+            and w.en_name like concat('%',#{enName},'%')
+        </if>
+        <if test="params.beginTime != null and params.beginTime != '' and params.endTime != null
+                    and params.endTime != '' ">
+            and w.create_time between #{params.beginTime} and #{params.endTime}
+        </if>
+        <if test="structIdList != null and structIdList.size() > 0">
+            and w.struct_id in
+            <foreach collection="structIdList" item="it" open="(" separator="," close=")">
+                #{it}
+            </foreach>
+        </if>
+        order by w.create_time desc
+    </select>
+
+</mapper>

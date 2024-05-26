@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.struct.mapper.CourseStructureMapper">
+
+    <resultMap id="selectCourseStructListMap" type="CourseStructure">
+        <result column="struct_id" jdbcType="BIGINT" property="structId"></result>
+        <result column="struct_name" jdbcType="VARCHAR" property="structName"></result>
+        <result column="type" jdbcType="VARCHAR" property="type"></result>
+        <result column="order_num" jdbcType="INTEGER" property="orderNum"></result>
+        <result column="parent_id" jdbcType="BIGINT" property="parentId"></result>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"></result>
+        <result column="create_by" jdbcType="VARCHAR" property="createBy"></result>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"></result>
+        <result column="update_by" jdbcType="VARCHAR" property="updateBy"></result>
+        <result column="remark" jdbcType="VARCHAR" property="remark"></result>
+        <result column="del_flag" jdbcType="VARCHAR" property="delFlag"></result>
+    </resultMap>
+
+    <select id="selectCourseStructList" resultMap="selectCourseStructListMap"
+            parameterType="ListVo">
+        select struct_id,struct_name,`type`,order_num,parent_id,create_time,create_by,
+               update_time,update_by,remark,del_flag from course_structure
+        where del_flag = '0'
+        <if test="structName != null and structName != ''">
+            and lower(struct_name) like concat('%',lower(#{structName}),'%')
+        </if>
+        <if test="type != null and type != ''">
+            and type = #{type}
+        </if>
+        <if test="parentId != null">
+            and parent_id = #{parentId}
+        </if>
+        order by order_num asc
+    </select>
+
+    <select id="selectCourseStructure" parameterType="java.lang.Long" resultType="CourseStructure">
+        select struct_id structId,struct_name structName,`type` type,order_num orderNum,parent_id parentId,
+               create_time createTime,create_by createBy,
+               update_time updateTime,update_by updateBy,remark remark,del_flag delFlag
+        from course_structure
+        where struct_id = #{value}
+    </select>
+
+    <insert id="insertCourseStructure" parameterType="CourseStructure">
+        insert into course_structure(struct_id,struct_name,type,order_num,parent_id,create_time,
+                                     create_by,update_time,update_by,remark,del_flag)
+        values (
+                #{structId},
+                #{structName},
+                #{type},
+                #{orderNum},
+                #{parentId},
+                #{createTime},
+                #{createBy},
+                #{updateTime},
+                #{updateBy},
+                #{remark},
+                #{delFlag}
+                )
+    </insert>
+
+    <delete id="deleteCourseStructure" parameterType="java.lang.Long">
+        update course_structure set del_flag = '1' where struct_id = #{structId}
+    </delete>
+
+    <delete id="deleteCourseStructureList" parameterType="java.util.List">
+
+        update course_structure set del_flag = '1' where struct_id in
+        <foreach collection="list" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </delete>
+
+    <update id="updateCourseStructure" parameterType="CourseStructure">
+        update course_structure set struct_name = #{structName},order_num = #{orderNum},remark = #{remark}
+        where struct_id = #{structId}
+    </update>
+
+</mapper>

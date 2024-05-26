@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.personal.mapper.CourseStudyQuestionMapper">
+
+    <resultMap id="otherQuestionAnswersMap" type="DoubtVo">
+        <result column="questionId" property="questionId"></result>
+        <result column="contentId" property="contentId"></result>
+        <result column="status" property="status"></result>
+        <result column="questionContent" property="questionContent"></result>
+        <result column="questionCreateTime" property="questionCreateTime"></result>
+        <result column="nickName" property="nickName"></result>
+        <result column="deptName" property="deptName"></result>
+        <result column="replyName" property="replyName"></result>
+        <result column="contentName" property="contentName"></result>
+        <collection property="courseStudyReplyList" ofType="CourseStudyReply">
+            <result property="replyId" column="replyId" />
+            <result property="replyContent" column="replyContent"/>
+            <result property="createTime" column="replyCreateTime"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectList" resultMap="otherQuestionAnswersMap" >
+        select
+            q.id questionId,
+            q.content_id contentId,
+            q.status status,
+            q.question_content questionContent,
+            q.create_time questionCreateTime,
+            r.reply_content replyContent,
+            r.create_time replyCreateTime,
+            c.name contentName
+        from
+             course_study_question q
+        left join
+             course_study_reply r
+        on
+            q.id = r.question_id
+        left join
+             course_content c
+        on
+            c.struct_id = q.content_id
+        where
+              1 = 1
+        <if test="status == 1">
+            and r.id is not null
+        </if>
+        <if test="status == 0">
+            and r.id is null
+        </if>
+        <if test="currentUserId != 1L">
+           and q.user_id = #{currentUserId}
+        </if>
+        order by
+            r.create_time desc, q.create_time desc
+    </select>
+
+    <select id="selectDoubt" resultMap="otherQuestionAnswersMap">
+        select
+            q.id questionId,
+            q.content_id contentId,
+            q.status status,
+            q.question_content questionContent,
+            q.create_time questionCreateTime,
+            r.reply_content replyContent,
+            r.create_time replyCreateTime,
+            c.name contentName
+        from
+            course_study_question q
+        left join
+            course_study_reply r
+        on
+            q.id = r.question_id
+        left join
+            course_content c
+        on
+            c.struct_id = q.content_id
+        where
+            q.content_id = #{contentId}
+        <if test="status == 1">
+            and r.id is not null
+        </if>
+        <if test="status == 0">
+            and r.id is null
+        </if>
+        <if test="userId != 1L">
+            and q.user_id = #{userId}
+        </if>
+        order by
+            r.create_time desc, q.create_time desc
+    </select>
+
+    <insert id="insertQuestion" parameterType="CourseStudyQuestion">
+        insert into course_study_question(id,content_id,status,question_content,user_id,create_time)
+        values (#{id},#{contentId},#{status},#{questionContent},#{userId},#{createTime})
+    </insert>
+</mapper>

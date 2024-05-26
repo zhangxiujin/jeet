@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.content.mapper.CourseContentVideoMapper">
+
+    <insert id="insert" parameterType="CourseContentVideo">
+        insert into course_content_video(id, content_id, url, name, ext,
+                                         create_by, create_time)
+        values (#{id}, #{contentId}, #{url}, #{name}, #{ext}, #{createBy}, #{createTime})
+    </insert>
+
+    <select id="select" parameterType="java.lang.Long" resultType="CourseContentVideo">
+        select
+               id id,
+               content_id contentId,
+               url url,
+               `name` name,
+               ext ext
+        from
+             course_content_video
+        where
+            content_id = #{value}
+    </select>
+
+    <update id="update" parameterType="CourseContentVideo">
+        update
+            course_content_video
+        set
+            url = #{url}, name = #{name}, ext = #{ext}
+        where content_id = #{contentId}
+    </update>
+
+    <delete id="delete" parameterType="java.lang.Long">
+        delete from course_content_video where id = #{value}
+    </delete>
+
+</mapper>

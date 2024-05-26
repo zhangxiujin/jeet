@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.personal.mapper.PersonalQuestionMapper">
+    <select id="selectQuestion" parameterType="QuestionVo" resultType="QuestionVo">
+        select
+            cp.id id,
+            cp.content_id contentId,
+            cp.user_id userId,
+            cp.`number` number,
+            cp.bank_type bankType,
+            cp.score score,
+            cp.answers answers,
+            cp.create_time createTime,
+            co.name structName
+        from
+            course_practice_record cp
+                inner join
+            course_content co
+            on
+                cp.content_id = co.id
+        where
+            cp.bank_type = #{bankType}
+          and
+            cp.user_id = #{userId}
+          and
+            cp.content_id = #{contentId}
+          and
+            cp.check_status = '1'
+    </select>
+
+    <select id="selectAnswers" parameterType="PersonQuestion" resultType="PersonQuestion">
+        select
+            id id,
+            score score,
+            answers answers
+        from
+            course_practice_record
+        where
+            id = #{id} and check_status = '1'
+    </select>
+
+    <select id="selectChoose" parameterType="java.util.List" resultType="ChooseErrorBankVo">
+        select
+        id bankId,
+        title title,
+        options options,
+        answer correctAnswers,
+        type type
+        from
+        course_choose_bank
+        where
+        id in
+        <foreach collection="bankIdList" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </select>
+
+    <select id="selectProject" parameterType="java.util.List" resultType="ProjectPersonalVo">
+        select
+        id bankId,
+        name name,
+        details details
+        from
+        course_project_bank
+        where
+        id in
+        <foreach collection="bankIdList" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </select>
+
+    <select id="selectSimple" parameterType="ErrorBankVo" resultType="SimpleErrorBankVo">
+        select
+        id bankId,
+        name simpleName,
+        details details
+        from
+        course_simple_bank
+        where
+        id in
+        <foreach collection="bankIdList" item="it" open="(" separator="," close=")">
+            #{it}
+        </foreach>
+    </select>
+</mapper>

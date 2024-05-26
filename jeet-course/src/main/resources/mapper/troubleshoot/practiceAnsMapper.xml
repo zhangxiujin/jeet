@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeet.course.troubleshoot.mapper.PracticeAnsMapper">
+    <resultMap id="selectAnswerMap" type="ReplyVo">
+        <result column="questionId" property="questionId" jdbcType="INTEGER"></result>
+        <result column="questionContent" property="questionContent" jdbcType="VARCHAR"></result>
+        <result column="quesTime" property="quesTime" jdbcType="TIMESTAMP"></result>
+        <collection property="courseStudyReplyList" ofType="CourseStudyReply">
+            <result column="replyContent" property="replyContent" jdbcType="VARCHAR"></result>
+            <result column="audioPath" property="audioPath" jdbcType="VARCHAR"></result>
+            <result column="replyId" property="replyId" jdbcType="INTEGER"></result>
+            <result column="createTime" property="createTime" jdbcType="TIMESTAMP"></result>
+        </collection>
+    </resultMap>
+
+    <insert id="insertAnswer" parameterType="CourseStudyReply">
+        insert into
+            course_study_reply (
+            id,
+            reply_content,
+            audio_path,
+            reply_id,
+            question_id,
+            create_time)
+        values (#{id},
+                #{replyContent},
+                #{audioPath},
+                #{replyId},
+                #{questionId},
+                #{createTime})
+    </insert>
+
+    <update id="updateState" parameterType="java.lang.Long">
+        update course_study_question set status = "1" where id = #{questionId}
+    </update>
+
+    <select id="selectAnsweredList" resultType="QuestionsVo">
+        select qu.id id,
+               qu.content_id contentId,
+               qu.status status,
+               qu.question_content questionContent,
+               qu.audio_path audioPath,
+               qu.user_id userId,
+               qu.create_time createTime,
+               us.nick_name nickName,
+               de.dept_name deptName,
+               co.name name,
+               co.struct_id structId
+        from
+           course_study_question qu
+        LEFT JOIN
+           sys_user us
+        on
+           qu.user_id = us.user_id
+        LEFT JOIN
+           sys_dept de
+        on
+           us.dept_id = de.dept_id
+        LEFT JOIN
+           course_content co
+        on
+           qu.content_Id = co.id
+        where
+           qu.status = #{status}
+           <choose>
+              <when test="courseIds != null and courseIds.size() > 0">
+                and qu.course_id in
+                <foreach collection="courseIds" item="it" open="(" separator="," close=")">
+                    #{it}
+                </foreach>
+              </when>
+              <otherwise>
+                  <if test="structId != null">
+                      and co.struct_id = #{structId}
+                  </if>
+              </otherwise>
+           </choose>
+            <choose>
+                <when test="userId != null">
+                    and qu.user_id = #{userId}
+                </when>
+                <otherwise>
+                    <if test="studentIds != null and studentIds.size() > 0">
+                        and qu.user_id in
+                        <foreach collection="studentIds" item="it" open="(" separator="," close=")">
+                            #{it}
+                        </foreach>
+                    </if>
+                </otherwise>
+            </choose>
+        ORDER BY qu.create_time asc
+    </select>
+
+    <select id="selectAnswer" parameterType="java.lang.Long" resultMap="selectAnswerMap">
+        select
+           qu.id questionId,
+           qu.question_content questionContent,
+           qu.create_time quesTime,
+           re.reply_content replyContent,
+           re.reply_id replyId,
+           re.audio_path audioPath,
+           re.create_time createTime
+        from
+             course_study_question qu
+        left join
+             course_study_reply re
+         on
+             re.question_id = qu.id
+        where
+            question_id = #{questionId}
+    </select>
+
+</mapper>

@@ -1,0 +1,13 @@
+server:
+  port: 80
+  servlet:
+    context-path: /
+
+mybatis:
+  type-aliases-package: com.jeet.**.po
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  config-location: classpath:mybatis/mybatis-config.xml
+
+spring:
+  profiles:
+    active: druid

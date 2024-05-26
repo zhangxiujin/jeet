@@ -1,0 +1,3 @@
+com.jeet.common.file.config.MinioConfig
+com.jeet.common.file.service.impl.MinioFileServiceImpl
+com.jeet.common.file.service.impl.VideoHandleServiceImpl

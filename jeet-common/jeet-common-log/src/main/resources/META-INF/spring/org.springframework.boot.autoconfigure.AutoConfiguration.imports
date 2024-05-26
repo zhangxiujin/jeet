@@ -1,0 +1,2 @@
+com.jeet.common.log.service.AsyncLogService
+com.jeet.common.log.aspect.LogAspect
